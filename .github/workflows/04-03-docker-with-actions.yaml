@@ -58,7 +58,7 @@ jobs:
           with:
             script: |
                 const body = `${{ steps.page.outputs.output}}`;
-                if (!body.includes("c204 github actions")) {
+                if (!body.includes("cw04 github actions")) {
                     core.setFailed("Page does not contain expected text");
                 }
         # Pobierz obrazek

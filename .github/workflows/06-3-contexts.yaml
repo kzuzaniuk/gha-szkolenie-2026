@@ -19,4 +19,4 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Script run
-        run: script.sh ${{ github.event.inputs.city }} ${{secrets.MY_KLUCZYK}}
+        run: ./script.sh ${{ github.event.inputs.city }} ${{secrets.MY_KLUCZYK}}

@@ -1,0 +1,29 @@
+name: "06 - Contexts - Python"
+run-name: "06-04 - Python Pogoda dla ${{ inputs.city }}"
+on:
+  workflow_dispatch:
+    inputs:
+      city:
+        type: string
+        default: "Warsaw"
+
+env:
+    MY_KLUCZYK: ${{secrets.MY_KLUCZYK}}
+jobs:
+    pogoda-info:
+        name: "Pogoda dla ${{ github.event.inputs.city }}"
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                shell: bash
+                working-directory: ./CWICZENIA/06-context/pogoda-python
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: Install Python
+              uses: actions/setup-python@v4  
+              with:
+                python-version: 3.8
+            - name: Sprawdzanie pogody
+              run: python3 ./pogoda.py "${{ github.event.inputs.city }}" "${{secrets.MY_KLUCZYK}}" >> $GITHUB_STEP_SUMMARY

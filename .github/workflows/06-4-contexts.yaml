@@ -26,4 +26,4 @@ jobs:
               with:
                 python-version: "3.x"
             - name: Sprawdzanie pogody
-              run: python3 ./pogoda.py "${{ github.event.inputs.city }}" "${{secrets.MY_KLUCZYK}}" >> $GITHUB_STEP_SUMMARY
+              run: ./start.py "${{ github.event.inputs.city }}" "${{secrets.MY_KLUCZYK}}" >> $GITHUB_STEP_SUMMARY

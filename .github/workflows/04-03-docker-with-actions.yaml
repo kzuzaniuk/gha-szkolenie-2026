@@ -11,7 +11,7 @@ jobs:
     runs-on: self-hosted
     defaults:
         run:
-            working-directory: CWICZENIA/04-praca-z-zewnetrznymi-akcjami/docker-app2
+            working-directory: CWICZENIA/04-praca-z-zewnetrznymi-akcjami/docker-app-02
     env:
         IMAGE_TAG: "webapp"
         TAG: ${{github.sha}}
@@ -25,7 +25,7 @@ jobs:
         - name: Build and Push Docker Image
           uses: docker/build-push-action@v5
           with:
-            context: ${{ github.workspace }}/CWICZENIA/04-praca-z-zewnetrznymi-akcjami/docker-app2
+            context: ${{ github.workspace }}/CWICZENIA/04-praca-z-zewnetrznymi-akcjami/docker-app-02
             push: false
             load: true
             tags: ${{ env.IMAGE_TAG }}:${{ env.TAG }}

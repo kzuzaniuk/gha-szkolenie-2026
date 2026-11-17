@@ -1,0 +1,22 @@
+name: "06 - Contexts - Weather"
+on:
+  workflow_dispatch:
+    inputs:
+      city:
+        type: string
+        default: "Warsaw"
+
+jobs:
+  echo-weather:
+    env:
+        MY_KLUCZYK: ${{secrets.MY_KLUCZYK}}
+        MY_OVERWRITTEN_VAR: "workflow"
+    runs-on: ubuntu-latest
+    defaults:
+        run:
+            working-directory: ./CWICZENIA/06-context/pogoda
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Script run
+        run: script.sh ${{ github.event.inputs.city }} ${{secrets.MY_KLUCZYK}}

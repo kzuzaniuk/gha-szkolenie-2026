@@ -25,12 +25,12 @@ jobs:
                 echo "Ref: ${{ github.ref }}"
                 echo "SHA: ${{ github.sha }}"
                 echo "Actor: ${{ github.actor }}"
-                echo: "Workflow: ${{ github.workflow }}"
-                echo: "Run ID: ${{ github.run_id }}"
-                echo: "Run Number: ${{ github.run_number }}"
+                echo "Workflow: ${{ github.workflow }}"
+                echo "Run ID: ${{ github.run_id }}"
+                echo "Run Number: ${{ github.run_number }}"
             - name: Retrieve Variable
               run: |
-                echo: "My Variable: ${{ vars.MY_VAR }}"
+                echo "My Variable: ${{ vars.MY_VAR }}"
             - name: Display Environment Variables
               env:
                 MY_OVERWRITTEN_VAR: "step"

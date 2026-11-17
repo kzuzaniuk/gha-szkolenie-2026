@@ -16,7 +16,7 @@ jobs:
         defaults:
             run:
                 shell: bash
-                working-directory: CWICZENIA/06-context/pogoda-python
+                working-directory: CWICZENIA/06-context/pogoda_python
 
         steps:
             - name: Checkout

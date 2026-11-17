@@ -5,6 +5,7 @@ on:
 
 jobs:
   build:
+    runs-on: ubuntu-latest
     name: Build and Test React App
     steps:
       - name: Checkout Code

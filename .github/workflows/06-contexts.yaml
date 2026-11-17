@@ -5,8 +5,8 @@ on:
     inputs:
       debug:
         type: boolean
-        description: "Enable debug mode"
         default: false
+        description: "Enable debug mode"
 
 env:
     MY_WORKFLOW_VAR: "workflow"
@@ -21,7 +21,7 @@ jobs:
         defaults:
             run:
                 shell: bash
-                working-directory: CWICZENIA/06-context/
+                working-directory: CWICZENIA/06-context
         steps:
             - name: Display Information
               run: |

@@ -5,16 +5,16 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    defaults:
-        run:
-            working-directory: ./04-praca-z-zewnetrznymi-akcjami
+    # defaults:
+    #     run:
+    #         working-directory: ./CWICZENIA/04-praca-z-zewnetrznymi-akcjami
     steps:
         - name: Checkout Code
           uses: actions/checkout@v4
         - name: Setup Docker Buildx
           uses: docker/setup-buildx-action@v3
         - name: Build Docker Image
-          working-directory: docker-nginx
+          working-directory: ./CWICZENIA/04-praca-z-zewnetrznymi-akcjami/docker-nginx
           run: |
             set -eux
             IMAGE_TAG=my-nginx:${GITHUB_SHA}

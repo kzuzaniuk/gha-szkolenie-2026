@@ -3,7 +3,7 @@ name: 99D actions dodatkowe plik do modyfikacji w actions
 on:
   push:
     branches:
-      - main
+      - D99
     # Push zmieniający wyłącznie ten plik nie uruchamia tego workflow.
     paths-ignore:
       - DODATKOWE/Modyfikacja_pliku_github_actions/Plik_do_modyfikacji.txt #potrzebne, inaczej wielokrotnie uruchomienia workflow push w pętli

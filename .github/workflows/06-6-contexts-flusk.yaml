@@ -1,0 +1,68 @@
+name: "06 - 06 Pogoda API CI"
+on:
+    workflow_dispatch:
+        inputs:
+            city:
+                type: string
+                default: "Warsaw"
+
+jobs:
+    build-and-test:
+        runs-on: ubuntu-latest
+        env:
+            LOCAL_IMAGE_NAME: python-pogoda:test
+            WORKDIR: CWICZENIA/06-context/pogoda_python_flusk
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: Build Docker Image
+              run: docker build -t ${{ env.LOCAL_IMAGE_NAME }} ${{ env.WORKDIR }}
+            - name: Run Container
+              run: docker run -d --name pogoda-container -p 8000:8000 -e OPENWEATHER_API_KEY="${{ secrets.MY_KLUCZYK }}" "${{ env.LOCAL_IMAGE_NAME }}"
+            - name: Wait for API
+              run: |
+                    for i in {1..10}; do
+                        if curl -s http://localhost:8000/health; then
+                            echo "API is up!"
+                            break
+                        fi
+                        echo "Waiting for API to be ready..."
+                        sleep 5
+                    done  
+            - name: Test API Endpoint
+              run: |
+                    set -e
+                    response=$(curl -f http://localhost:8000/weather?city=${{ inputs.city }}&api_key=${{ secrets.MY_KLUCZYK }})
+                    echo "Response: $response"
+                    if [[ "$response" != *"${{ inputs.city }}"* ]]; then
+                        echo "Test failed: Expected city not found in response."
+                        exit 1
+                    fi
+            - name: Stop and Remove Container
+              if: always()
+              run: |
+                    docker stop pogoda-container || true   
+                    docker rm pogoda-container || true 
+            - name: Docker Hub Push (Optional)
+              if: github.event_name == 'workflow_dispatch' && github.actor == 'kzuaznik' && github.ref == 'refs/heads/main'
+              uses: docker/login-action@v3
+              with:
+                    username: ${{ secrets.DOCKER_USERNAME }}
+                    password: ${{ secrets.DOCKER_PASSWORD }}
+                    
+            - name: Tag image for Docker Hub
+              if: github.event_name == 'workflow_dispatch' && github.actor == 'kzuaznik' && github.ref == 'refs/heads/main'
+              run: |
+                    SHORT_SHA="${GITHUB_SHA::7}"
+                    HUB_IMAGE_BASE="${{ secrets.DOCKERHUB_USERNAME }}/python_pogoda"
+                    echo "Tagging image:"
+                    echo "$HUB_IMAGE_BASE:KZuzaniuk"
+                    echo "$HUB_IMAGE_BASE:$SHORT_SHA"
+                    docker tag "$LOCAL_IMAGE_NAME" "$HUB_IMAGE_BASE:KZuzaniuk"
+                    docker tag "$LOCAL_IMAGE_NAME" "$HUB_IMAGE_BASE:$SHORT_SHA"
+            - name: Push to Docker Hub
+              run: |
+                        SHORT_SHA="${GITHUB_SHA::7}"
+                        HUB_IMAGE_BASE="${{ secrets.DOCKERHUB_USERNAME }}/python_pogoda"
+                        docker push "$HUB_IMAGE_BASE:KZuzaniuk"
+                        docker push "$HUB_IMAGE_BASE:$SHORT_SHA"

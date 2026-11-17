@@ -5,6 +5,9 @@ on:
       city:
         type: string
         default: "Warsaw"
+        
+permissions:
+  contents: write
 
 jobs:
   echo-weather:
@@ -19,4 +22,4 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Script run
-        run: sudo ./start.sh ${{ github.event.inputs.city }} ${{secrets.MY_KLUCZYK}}
+        run: ./start.sh ${{ github.event.inputs.city }} ${{secrets.MY_KLUCZYK}}

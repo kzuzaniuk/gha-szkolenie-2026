@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
         run:
-            working-directory: ./04-using-actions/react-app #ustawia katalog roboczy dla wszystkich kroków w tym jobie, żeby nie trzeba było powtarzać w każdym kroku
+            working-directory: ./04-praca-z-zewnetrznymi-akcjami/react-app #ustawia katalog roboczy dla wszystkich kroków w tym jobie, żeby nie trzeba było powtarzać w każdym kroku
     name: Build and Test React App
     steps:
       - name: Checkout Code

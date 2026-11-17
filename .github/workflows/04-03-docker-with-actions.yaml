@@ -33,7 +33,7 @@ jobs:
         - name: Compose up #uruchomienie kontenerów z docker-compose.yaml
           uses: hoverkraft-tech/compose-action@b659c744ee9bed25aea2307c017ad849bd104433
           with:
-            compose-file: ${{ github.workspace }}/CWICZENIA/04-praca-z-zewnetrzymi-akcjami/docker-app-02/docker-compose.yaml
+            compose-file: CWICZENIA/04-praca-z-zewnetrzymi-akcjami/docker-app-02/docker-compose.yaml
             project-name: docker-app-02
             downflags: --volumes --remove-orphans
             action: up

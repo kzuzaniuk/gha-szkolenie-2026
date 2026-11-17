@@ -38,11 +38,6 @@ jobs:
                         echo "Test failed: Expected city not found in response."
                         exit 1
                     fi
-            - name: Stop and Remove Container
-              if: always()
-              run: |
-                    docker stop pogoda-container || true   
-                    docker rm pogoda-container || true 
             - name: Docker Hub Push (Optional)
               uses: docker/login-action@v3
               with:
@@ -54,13 +49,19 @@ jobs:
                     SHORT_SHA="${GITHUB_SHA::7}"
                     HUB_IMAGE_BASE="${{ secrets.DOCKERHUB_USERNAME }}/python_pogoda"
                     echo "Tagging image:"
-                    echo "$HUB_IMAGE_BASE:KZuzaniuk"
+                    echo "$HUB_IMAGE_BASE:latest"
                     echo "$HUB_IMAGE_BASE:$SHORT_SHA"
-                    docker tag "$LOCAL_IMAGE_NAME" "$HUB_IMAGE_BASE:KZuzaniuk"
+                    docker tag "$LOCAL_IMAGE_NAME" "$HUB_IMAGE_BASE:latest"
                     docker tag "$LOCAL_IMAGE_NAME" "$HUB_IMAGE_BASE:$SHORT_SHA"
             - name: Push to Docker Hub
               run: |
                     SHORT_SHA="${GITHUB_SHA::7}"
                     HUB_IMAGE_BASE="${{ secrets.DOCKERHUB_USERNAME }}/python_pogoda"
-                    docker push "$HUB_IMAGE_BASE:KZuzaniuk"
+                    docker push "$HUB_IMAGE_BASE:latest"
                     docker push "$HUB_IMAGE_BASE:$SHORT_SHA"
+
+            - name: Stop and Remove Container
+              if: always()
+              run: |
+                    docker stop pogoda-container || true   
+                    docker rm pogoda-container || true 

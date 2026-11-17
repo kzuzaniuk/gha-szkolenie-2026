@@ -82,5 +82,5 @@ jobs:
 
           # Uwzględnij zmiany dodane do main w trakcie działania workflow.
           # Konflikt przerywa operację; nie stosujemy force push.
-          git pull --rebase origin main
-          git push origin HEAD:main
+          git pull --rebase origin D99
+          git push origin HEAD:D99

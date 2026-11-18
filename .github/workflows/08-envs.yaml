@@ -132,7 +132,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           username: ${{ env.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push dev image
         id: publish
@@ -256,8 +256,8 @@ jobs:
         env:
           IMAGE_TAG: ${{ vars.IMAGE_TAG }}
         run: |
-          if [ "$IMAGE_TAG" != 'stagekozn' ]; then
-            echo "::error::Ustaw IMAGE_TAG=stagekozn w Environment test."
+          if [ "$IMAGE_TAG" != 'stagingkozn' ]; then
+            echo "::error::Ustaw IMAGE_TAG=stagingkozn w Environment test."
             exit 1
           fi
           echo "IMAGE_TAG=$IMAGE_TAG" >> "$GITHUB_ENV"

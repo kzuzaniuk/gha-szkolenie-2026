@@ -2,17 +2,20 @@ name: 06-06c Pogoda API CI + deploy
 
 on:
   push:
-    branches: [ feature/06-pogoda-api ]
+    branches: [ feature/08-pogoda-api ]
   pull_request:
-    branches: [ feature/06-pogoda-api ]
+    branches: [ feature/08-pogoda-api ]
   workflow_dispatch:
 
 env:
-  WORKDIR: ./CWICZENIA/06-context/pogoda_python_flusk
-  TEST_IMAGE: ${{ secrets.DOCKER_USERNAME }}/python_pogoda
-  HUB_IMAGE_BASE: ${{ secrets.DOCKER_USERNAME }}/python_pogoda
-  DOCKERHUB_TAG: latest
-  DOCKER_PORT_EXTERNAL: 18000
+  WORKDIR: ${{vars.WORKDIR}}  #Wartości `vars` nie pojawiają się automatycznie jako zmienne powłoki. Przekaż je przez `env`, aby odczytywać je w Bashu.
+  TEST_IMAGE: ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_IMAGE_NAME}}
+  HUB_IMAGE_BASE: ${{ secrets.DOCKER_USERNAME }}/${{vars.DOCKER_IMAGE_NAME}}
+  DOCKERHUB_TAG: ${{vars.DOCKERHUB_TAG}}
+  DOCKER_PORT_EXTERNAL: ${{vars.DOCKER_PORT_EXTERNAL}}
+  WEATHER_CITY: ${{vars.WEATHER_CITY || 'Warsaw'}}
+  DEPLOY_BRANCH: ${{vars.DEPLOY_BRANCH || 'main'}}
+  CONFIG_SCOPE: "workflow"
 
 jobs:
   # =====================
@@ -80,7 +83,7 @@ jobs:
         run: |
           set -e
           echo "Testowanie endpointu /weather..."
-          curl -f "http://localhost:8000/weather?city=Warsaw&api_key=${{ secrets.MY_KLUCZYK }}"
+          curl -f "http://localhost:8000/weather?city=${{env.WEATHER_CITY}}&api_key=${{ secrets.MY_KLUCZYK }}"
           echo
           echo "OK - endpoint /weather zwrócił odpowiedź 2xx."
 
@@ -102,7 +105,9 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/feature/06-pogoda-api'
+    if: >-
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      github.ref_name == vars.DEPLOY_BRANCH
     outputs:
       image_digest: ${{ steps.publish.outputs.digest }}
 
@@ -142,6 +147,7 @@ jobs:
       cancel-in-progress: false
     env:
       IMAGE_DIGEST: ${{ needs.build-and-push.outputs.image_digest }}
+      CONFIG_SCOPE: "job"
 
     steps:
       - name: Log in to Docker Hub
@@ -160,7 +166,7 @@ jobs:
       - name: Remove previous deployment container if it exists
         run: |
           # Uwzględnij także zatrzymany kontener i dopasuj tylko pełną nazwę.
-          existing_container="$(docker container ls --all --quiet --filter 'name=^/pogoda_api_deploy$')"
+          existing_container="$(docker container ls --all --quiet --filter 'name=^/${{vars.DEPLOY_CONTAINER_NAME}}$')"
           if [ -n "$existing_container" ]; then
             docker rm --force "$existing_container"
           fi
@@ -170,11 +176,15 @@ jobs:
           OPENWEATHER_API_KEY: ${{ secrets.MY_KLUCZYK }}
         run: |
           docker run -d \
-            --name pogoda_api_deploy \
+            --name ${{vars.DEPLOY_CONTAINER_NAME}} \
             --restart unless-stopped \
             -p ${{ env.DOCKER_PORT_EXTERNAL }}:8000 \
             -e OPENWEATHER_API_KEY \
-            "${HUB_IMAGE_BASE}@${IMAGE_DIGEST}"
+            "${HUB_IMAGE_BASE}@${IMAGE_DIGEST}" 
+
+ # W polach akcji, takich jak `with.context` i `with.tags`, używaj kontekstu
+# `${{ env.NAZWA }}`. W skryptach Bash używaj `"$NAZWA"` lub `"${NAZWA}"`.
+# Zmienne umieszczaj w cudzysłowach
 
       - name: Verify deployed API is ready
         run: |
@@ -184,7 +194,7 @@ jobs:
             --retry-max-time 60 --max-time 5 \
             --output /dev/null \
             http://127.0.0.1:${{ env.DOCKER_PORT_EXTERNAL }}/openapi.json
-          test "$(docker inspect --format '{{.State.Running}}' pogoda_api_deploy)" = true
+          test "$(docker inspect --format '{{.State.Running}}' ${{vars.DEPLOY_CONTAINER_NAME}})" = true
           echo "Kontener pobrany z Docker Hub działa, a API odpowiada."
 
       - name: Test deployed /weather endpoint via curl
@@ -192,10 +202,10 @@ jobs:
           echo "Testowanie wdrożonego endpointu /weather..."
           # Aplikacja korzysta z OPENWEATHER_API_KEY przekazanego do kontenera.
           curl --fail --silent --show-error --max-time 30 \
-            "http://127.0.0.1:${DOCKER_PORT_EXTERNAL}/weather?city=Warsaw"
+            "http://127.0.0.1:${DOCKER_PORT_EXTERNAL}/weather?city=${{env.WEATHER_CITY}}"
           echo
           echo "OK - wdrożony endpoint /weather zwrócił odpowiedź bez błędu HTTP."
 
       - name: Show deployed container logs on failure
         if: failure()
-        run: docker logs pogoda_api_deploy || true
+        run: docker logs ${{vars.DEPLOY_CONTAINER_NAME}} || true

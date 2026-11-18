@@ -2,7 +2,7 @@ name: 07-02 - Expressions Docker
 
 on:
   push:
-    branches: [ main, feature/06-pogoda-api ]
+    branches: [ feature/06-pogoda-api ]
   pull_request:
     branches: [ feature/06-pogoda-api ]
   workflow_dispatch:
@@ -53,6 +53,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
 
+    # testy:
+    # - zawsze na pull_request
+    # - na push tylko jeśli commit NIE zawiera [skip tests]
+    if: >
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip tests]'))
+      
     steps:
       - name: Download image artifact
         uses: actions/download-artifact@v4

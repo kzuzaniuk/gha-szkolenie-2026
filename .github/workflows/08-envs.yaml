@@ -18,8 +18,8 @@ env:
   WORKDIR: ${{ vars.WORKDIR || './CWICZENIA/08-variables/pogoda_python_flusk' }}
   DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME || 'kozn' }}
   DOCKER_IMAGE_NAME: ${{ vars.DOCKER_IMAGE_NAME || 'python_pogoda' }}
-  TEST_IMAGE: ${{ vars.DOCKER_USERNAME || 'kozn' }}/${{ vars.DOCKER_IMAGE_NAME || 'python_pogoda' }}
-  HUB_IMAGE_BASE: ${{ vars.DOCKER_USERNAME || 'kozn' }}/${{ vars.DOCKER_IMAGE_NAME || 'python_pogoda' }}
+  TEST_IMAGE: ${{ secrets.DOCKER_USERNAME || 'kozn' }}/${{ vars.DOCKER_IMAGE_NAME || 'python_pogoda' }}
+  HUB_IMAGE_BASE: ${{ secrets.DOCKER_USERNAME || 'kozn' }}/${{ vars.DOCKER_IMAGE_NAME || 'python_pogoda' }}
   CI_TAG: ci-${{ github.sha }}
   WEATHER_CITY: ${{ vars.WEATHER_CITY || 'Warsaw' }}
 
@@ -243,9 +243,9 @@ jobs:
     if: >-
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
       github.ref_name == (vars.DEPLOY_BRANCH || 'main')
-    environment: test
+    environment: staging
     concurrency:
-      group: pogoda-env-publish-test
+      group: pogoda-env-publish-staging
       cancel-in-progress: false
     outputs:
       image_digest: ${{ steps.publish.outputs.digest }}
@@ -257,7 +257,7 @@ jobs:
           IMAGE_TAG: ${{ vars.IMAGE_TAG }}
         run: |
           if [ "$IMAGE_TAG" != 'stagingkozn' ]; then
-            echo "::error::Ustaw IMAGE_TAG=stagingkozn w Environment test."
+            echo "::error::Ustaw IMAGE_TAG=stagingkozn w Environment staging."
             exit 1
           fi
           echo "IMAGE_TAG=$IMAGE_TAG" >> "$GITHUB_ENV"
@@ -286,13 +286,13 @@ jobs:
   deploy-test:
     runs-on: [self-hosted, linux]
     needs: build-and-push-test
-    environment: test
+    environment: staging
     timeout-minutes: 5
     concurrency:
-      group: pogoda-env-deploy-test
+      group: pogoda-env-deploy-staging
       cancel-in-progress: false
     env:
-      TARGET_ENVIRONMENT: test
+      TARGET_ENVIRONMENT: staging
       IMAGE_DIGEST: ${{ needs.build-and-push-test.outputs.image_digest }}
       IMAGE_TAG: ${{ needs.build-and-push-test.outputs.image_tag }}
     steps:

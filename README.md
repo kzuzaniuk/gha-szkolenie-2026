@@ -5,4 +5,4 @@ Repozytorium szkolenia GitHub Actions 2026
 
 prtest
 
-test
+testteste

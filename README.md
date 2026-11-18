@@ -4,3 +4,5 @@ Repozytorium szkolenia GitHub Actions 2026
 #1 Dodanie ćwiczeń do repozytorium
 
 prtest
+
+test

@@ -16,7 +16,7 @@ defaults:
 
 env:
   WORKDIR: ${{ vars.WORKDIR || './CWICZENIA/08-variables/pogoda_python_flusk' }}
-  DOCKERHUB_USERNAME: ${{ vars.DOCKER_USERNAME || 'kozn' }}
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME || 'kozn' }}
   DOCKER_IMAGE_NAME: ${{ vars.DOCKER_IMAGE_NAME || 'python_pogoda' }}
   TEST_IMAGE: ${{ vars.DOCKER_USERNAME || 'kozn' }}/${{ vars.DOCKER_IMAGE_NAME || 'python_pogoda' }}
   HUB_IMAGE_BASE: ${{ vars.DOCKER_USERNAME || 'kozn' }}/${{ vars.DOCKER_IMAGE_NAME || 'python_pogoda' }}

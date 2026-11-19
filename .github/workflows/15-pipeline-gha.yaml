@@ -30,7 +30,7 @@ jobs:
               uses: docker/build-push-action@v6
               with:
                 context: ./${{env.APP_DIR}}
-                tag: ${{env.CI_IMAGE}}
+                tags: ${{env.CI_IMAGE}}
                 load: true
                 push: false
             - name: Save image

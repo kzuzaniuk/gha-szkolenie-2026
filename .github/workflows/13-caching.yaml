@@ -33,7 +33,7 @@ jobs:
               uses: docker/build-push-action@v6
               with:
                 context: ${{github.workspace}}/${{env.WORKDIR}}
-                file: ./Dockerfile
+                file: ${{github.workspace}}/${{env.WORKDIR}}/Dockerfile
                 load: true
                 push: false
                 tags: test-nginx:latest

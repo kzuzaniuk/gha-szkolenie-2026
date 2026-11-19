@@ -23,7 +23,7 @@ jobs:
             - name: Cache Docker Layers
               uses: actions/cache@v3
               with:
-                path: /tmp/.build-cache
+                path: /tmp/.buildx-cache
                 key: ${{runner.os}}-buildx-${{ hashFiles('**/Dockerfile')}}
                 restore-keys: |
                     ${{runner.os}}-buildx  
@@ -33,7 +33,7 @@ jobs:
               uses: docker/build-push-action@v6
               with:
                 context: ${{github.workspace}}/${{env.WORKDIR}}
-                file: ./DockerFile
+                file: ./Dockerfile
                 load: true
                 push: false
                 tags: test-nginx:latest

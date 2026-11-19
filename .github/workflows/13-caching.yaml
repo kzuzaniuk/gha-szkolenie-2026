@@ -13,7 +13,7 @@ defaults:
         working-directory: ./CWICZENIA/13-caching/docker01
 
 env:
-    WORKDIR: ./CWICZENIA/13-caching/docker01
+    WORKDIR: /CWICZENIA/13-caching/docker01
 
 jobs:
     build:
@@ -26,7 +26,7 @@ jobs:
             - name: Build Docker image (with cache)
               uses: docker/build-push-action@v6
               with:
-                context: ${{env.WORKDIR}}/Dockerfile
+                context: ${{github.workspace}}/${{env.WORKDIR}}/Dockerfile
                 load: true
                 push: false
                 tags: test-nginx:latest

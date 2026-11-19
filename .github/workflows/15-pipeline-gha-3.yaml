@@ -48,6 +48,7 @@ jobs:
                 path: image.tar
     test:
         runs-on: ubuntu-latest
+        environment: test
         needs: build
         steps:
             - name: Checkout
@@ -63,7 +64,7 @@ jobs:
               env:
                 OPENWEATHER_API_KEY: ${{secrets.MY_KLUCZYK}}
               run: |
-                if [ -z "$OPENWEATHER_API_KEY"]; then
+                if [ -z "$OPENWEATHER_API_KEY" ]; then
                  echo "::error::Brak respository secret API KEY"
                  exit 1
                 fi

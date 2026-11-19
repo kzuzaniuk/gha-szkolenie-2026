@@ -64,7 +64,7 @@ jobs:
                 fi
                 docker run -d \
                 --name "$CI_IMAGE" \
-                -p 127.0.0.1:"$APP_PORT":8080
+                -p 127.0.0.1:"$APP_PORT":8080 \
                 -e OPENWEATHER_API_KEY \
                 "${HUB_IMAGE_BASE}:${CI_TAG}"
                 curl -f -s -S \

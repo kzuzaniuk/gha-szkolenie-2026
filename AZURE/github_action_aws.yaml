@@ -1,0 +1,186 @@
+name: Domain Zone Configuration CI
+
+on:
+  push:
+    branches: main
+  pull_request:
+    branches: main
+
+jobs:
+  tf-validate:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8
+
+      - name: Configure hcl backend-config file
+        run: |
+          cat << EOF > ./backend-config.hcl
+          ${{ secrets.BACKEND_CONFIG_HCL }}
+          EOF
+
+      - name: Terraform init
+        id: init
+        run: terraform init -backend-config=backend-config.hcl
+
+      - name: Terraform validate
+        id: validate
+        run: terraform validate
+
+  tf-fmt:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8
+
+      - name: Terraform fmt
+        id: fmt
+        run: terraform fmt -check
+  
+  tf-plan:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    needs: tf-validate
+
+    outputs:
+      tfplanExitCode: S{{ steps.tf-plan.outputs.exitcode }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8
+
+      - name: Configure hcl backend-config file
+        run: |
+          cat << EOF > ./backend-config.hcl
+          ${{ secrets.BACKEND_CONFIG_HCL }}
+          EOF
+
+      - name: Terraform init
+        id: init
+        run: terraform init -backend-config=backend-config.hcl
+
+      - name: Terraform plan 
+        id: only_plan
+        if: github.ref != 'refs/heads/main'
+        run: |
+          terraform plan \
+          -var="aws_secret_key=${{ secrets.AWS_SECRET_KEY }}" \
+          -var="aws_access_key=${{ secrets.AWS_ACCESS_KEY }}" \
+          -var="ovh_application_key=${{ secrets.OVH_APPLICATION_KEY }}" \
+          -var="ovh_application_secret=${{ secrets.OVH_APPLICATION_SECRET }}" \
+          -var="ovh_consumer_key=${{ secrets.OVH_CONSUMER_KEY }}" \
+          -out=tfplan \
+          -input=false
+
+      - name: Terraform plan with tfplan output
+        id: plan
+        if: github.ref == 'refs/heads/main'
+        run: |
+          export exitcode=0
+          terraform plan \
+          -detailed-exitcode \
+          -var="aws_secret_key=${{ secrets.AWS_SECRET_KEY }}" \
+          -var="aws_access_key=${{ secrets.AWS_ACCESS_KEY }}" \
+          -var="ovh_application_key=${{ secrets.OVH_APPLICATION_KEY }}" \
+          -var="ovh_application_secret=${{ secrets.OVH_APPLICATION_SECRET }}" \
+          -var="ovh_consumer_key=${{ secrets.OVH_CONSUMER_KEY }}" \
+          -out=tfplan \
+          -input=false || export exitcode=$?
+
+          echo "exitcode=$exitcode" >> $GITHUB_OUTPUT
+
+          if [ $exitcode -eq 1 ]; then
+            echo "Plan failed"
+            exit 1
+          else
+            echo "Plan succeeded"
+            exit 0
+          fi
+
+      - name: Upload tfplan
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: tfplan
+
+  tf-apply:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: [tf-plan]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8
+
+      - name: Configure hcl backend-config file
+        run: |
+          cat << EOF > ./backend-config.hcl
+          ${{ secrets.BACKEND_CONFIG_HCL }}
+          EOF
+
+      - name: Terraform init
+        id: init
+        run: terraform init -backend-config=backend-config.hcl
+
+      - name: Download tfplan
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan
+          path: ./downloaded-tfplan
+
+      - name: Terraform apply
+        id: apply
+        run: |
+          terraform apply ./downloaded-tfplan/tfplan
+
+  discord_error_message:
+    runs-on: ubuntu-latest
+    needs: [tf-validate, tf-fmt, tf-plan, tf-apply]
+    if: ${{ always() && contains(needs.*.result, 'failure') }}
+    steps:
+      - name: Identify failed job
+        id: identify_failed_job
+        run: |
+          failed_jobs=()
+          if [ "${{ needs.tf-validate.result }}" == "failure" ]; then
+            failed_jobs+=("tf-validate")
+          fi
+          if [ "${{ needs.tf-fmt.result }}" == "failure" ]; then
+            failed_jobs+=("tf-fmt")
+          fi
+          if [ "${{ needs.tf-plan.result }}" == "failure" ]; then
+            failed_jobs+=("tf-plan")
+          fi
+          if [ "${{ needs.tf-apply.result }}" == "failure" ]; then
+            failed_jobs+=("tf-apply")
+          fi
+          echo "failed_jobs=${failed_jobs[@]}" >> $GITHUB_ENV
+
+      - name: Send Discord notification
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.WEBHOOK_URL_DISCORD }}
+          content: |
+            - **Repository:** ${{ github.repository }}
+            - **Branch:** ${{ github.ref }}
+            - **Action:** ${{ github.event_name }}
+            - **Workflow:** ${{ github.workflow }}
+            - **Failed Jobs:** ${{ env.failed_jobs }}
+            - **Run ID:** ${{ github.run_id }}
+            - **Run Number:** ${{ github.run_number }}
+            - **Commit:** ${{ github.sha }}

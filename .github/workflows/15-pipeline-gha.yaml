@@ -135,10 +135,10 @@ jobs:
         needs: build-and-push
         timeout-minutes: 10
         concurrency:
-        group: pogoda-faza1-deploy
-        cancel-in-progress: false
+            group: pogoda-faza1-deploy
+            cancel-in-progress: false
         env:
-        IMAGE_DIGEST: ${{ needs.build-and-push.outputs.image_digest }}
+            IMAGE_DIGEST: ${{ needs.build-and-push.outputs.image_digest }}
         steps:
         - name: Prepare isolated Docker credentials directory
           run: |

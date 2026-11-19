@@ -13,7 +13,7 @@ defaults:
         working-directory: ./CWICZENIA/13-caching/docker01
 
 env:
-    WORKDIR: /CWICZENIA/13-caching/docker01
+    WORKDIR: CWICZENIA/13-caching/docker01
 
 jobs:
     build:

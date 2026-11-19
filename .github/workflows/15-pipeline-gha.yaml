@@ -95,7 +95,7 @@ jobs:
             github.ref_name == (vars.FAZA1_DEPLOY_BRANCH || 'main')
         timeout-minutes: 15
         outputs:
-        image_digest: ${{ steps.publish.outputs.image_digest }}
+            image_digest: ${{ steps.publish.outputs.image_digest }}
         steps:
         - name: Download the tested image
           uses: actions/download-artifact@v4

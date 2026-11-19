@@ -36,8 +36,8 @@ jobs:
                 tags: ${{env.CI_IMAGE}}
                 load: true
                 push: false
-                cache-from: type=gha,version2,scope=15a-pogoda-faza2
-                cache-to: type=gha,version2,scope=15a-pogoda-faza2,mode=max
+                cache-from: type=gha,version=2,scope=15a-pogoda-faza2
+                cache-to: type=gha,version=2,scope=15a-pogoda-faza2,mode=max
             - name: Save image
               run: |
                 docker save "$CI_IMAGE" -o image.tar
